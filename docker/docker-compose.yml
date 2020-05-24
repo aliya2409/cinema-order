@@ -1,0 +1,65 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - 'rabbitmq_data:/data'
+  order-database:
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    env_file:
+      - order-database.env
+    volumes:
+      - order-database-data:/var/lib/postgresql/data/
+  payment-database:
+    image: "postgres"
+    ports:
+      - "5434:5432"
+    env_file:
+      - payment-database.env
+    volumes:
+      - payment-database-data:/var/lib/postgresql/data/
+  schedule-database:
+    image: "postgres"
+    ports:
+      - "5433:5432"
+    env_file:
+      - schedule-database.env
+    volumes:
+      - schedule-database-data:/var/lib/postgresql/data/
+  order:
+    depends_on:
+      - rabbitmq
+      - order-database
+    image: "cinema-order"
+    ports:
+      - "8080:8080"
+  notification:
+    depends_on:
+      - rabbitmq
+    image: "cinema-notification"
+    ports:
+      - "8090:8090"
+  payment:
+    depends_on:
+      - rabbitmq
+      - payment-database
+    image: "cinema-payment"
+    ports:
+      - "8091:8091"
+  schedule:
+    depends_on:
+      - rabbitmq
+      - schedule-database
+    image: "cinema-schedule"
+    ports:
+      - "8092:8092"
+volumes:
+  rabbitmq_data:
+  order-database-data:
+  payment-database-data:
+  schedule-database-data:
